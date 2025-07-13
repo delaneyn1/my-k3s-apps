@@ -1,0 +1,17 @@
+# nginx-service.yaml
+# Defines a Service to expose the Nginx Deployment.
+# A Service provides a stable network endpoint for a set of pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service # Name of this Service
+spec:
+  selector:
+    app: nginx # Selects pods with the label 'app: nginx' (our Nginx Deployment pods)
+  ports:
+    - protocol: TCP
+      port: 80 # The port on which this Service will be accessible within the cluster
+      targetPort: 80 # The port on the pods that the Service will forward traffic to
+  type: LoadBalancer # Exposes the Service externally using a cloud provider's load balancer.
+                     # In k3s, this often gets handled by Klipper-lb or similar,
+                     # exposing it on a node port or a local IP.

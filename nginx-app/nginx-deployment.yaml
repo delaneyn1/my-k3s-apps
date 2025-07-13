@@ -1,0 +1,46 @@
+# nginx-deployment.yaml
+# Defines a Deployment for the Nginx web server.
+# A Deployment ensures that a specified number of identical pods are running.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment # Name of this Deployment
+  labels:
+    app: nginx # Label to identify this application
+spec:
+  replicas: 2 # Number of Nginx pod replicas to run. This provides basic high availability.
+  selector:
+    matchLabels:
+      app: nginx # Selects pods with the label 'app: nginx' to manage
+  template:
+    metadata:
+      labels:
+        app: nginx # Labels applied to the pods created by this Deployment
+    spec:
+      containers:
+      - name: nginx # Name of the container
+        image: nginx:latest # The Docker image to use for the container (latest Nginx)
+        ports:
+        - containerPort: 80 # The port Nginx listens on inside the container
+        resources:
+          requests: # Minimum resources requested by the container (good for scheduling)
+            cpu: "50m" # 50 millicores of CPU
+            memory: "64Mi" # 64 Megabytes of memory
+          limits: # Maximum resources the container can consume (prevents resource hogging)
+            cpu: "100m" # 100 millicores of CPU
+            memory: "128Mi" # 128 Megabytes of memory
+      # Node affinity to prefer worker nodes (optional but good practice for SRE on k3s)
+      # This tells the scheduler to prefer nodes that are not tainted as master nodes.
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: DoesNotExist
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: DoesNotExist
